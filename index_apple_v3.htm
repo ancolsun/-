@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真太阳时</title>
+    <style>
+        body {
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f7fa, #e4e7eb);
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+        h1 {
+            font-size: 34px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .time-box {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+        .true-solar {
+            font-size: 36px;
+            font-weight: 600;
+            color: #fff;
+            background: #007aff;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .other-time-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            color: #6e6e73;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            appearance: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+        }
+        footer {
+            font-size: 12px;
+            color: #8e8e93;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>真太阳时</h1>
+    <div class="time-box">
+        <div class="true-solar" id="trueSolarTime">加载中...</div>
+        <div class="other-time-row">
+            <span>平太阳时: <span id="meanSolarTime">加载中...</span></span>
+            <span>北京时间: <span id="beijingTime">加载中...</span></span>
+        </div>
+    </div>
+    <select id="citySelect" onchange="updateTime()">
+        <!-- 内嵌部分中国城市数据 -->
+        <option value="116.4">北京 (经度 116.4°E)</option>
+        <option value="121.5">上海 (经度 121.5°E)</option>
+        <option value="113.3">广州 (经度 113.3°E)</option>
+        <option value="106.5">重庆 (经度 106.5°E)</option>
+        <option value="114.1">武汉 (经度 114.1°E)</option>
+        <option value="120.2">天津 (经度 120.2°E)</option>
+        <option value="108.9">西安 (经度 108.9°E)</option>
+        <option value="104.1">成都 (经度 104.1°E)</option>
+        <option value="123.4">沈阳 (经度 123.4°E)</option>
+        <option value="126.6">哈尔滨 (经度 126.6°E)</option>
+        <option value="113.0">深圳 (经度 113.0°E)</option>
+        <option value="120.1">南京 (经度 120.1°E)</option>
+        <option value="120.6">杭州 (经度 120.6°E)</option>
+        <option value="117.2">福州 (经度 117.2°E)</option>
+        <option value="115.9">南昌 (经度 115.9°E)</option>
+        <option value="112.9">长沙 (经度 112.9°E)</option>
+        <option value="106.6">昆明 (经度 106.6°E)</option>
+        <option value="108.3">南宁 (经度 108.3°E)</option>
+        <option value="110.3">海口 (经度 110.3°E)</option>
+        <option value="101.7">贵阳 (经度 101.7°E)</option>
+    </select>
+    <footer>根据当地经度实时计算 | Designed with ❤️ by xAI</footer>
+
+    <script>
+        function updateTime() {
+            const citySelect = document.getElementById('citySelect');
+            const longitude = parseFloat(citySelect.value) || 116.4; // 默认北京经度
+            const now = new Date();
+            const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+
+            // 计算平太阳时
+            const timeDiff = (longitude - 120) * 4; // 每度4分钟
+            const meanSolarTime = new Date(now.getTime() + timeDiff * 60 * 1000);
+
+            // 简化的真太阳时计算（时差方程EOT）
+            const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+            const eot = 9.87 * Math.sin(2 * Math.PI * dayOfYear / 365) - 7.53 * Math.cos(Math.PI * dayOfYear / 365) - 1.5 * Math.sin(Math.PI * dayOfYear / 365);
+            const trueSolarTime = new Date(meanSolarTime.getTime() + eot * 60 * 1000);
+
+            // 更新显示
+            document.getElementById('trueSolarTime').textContent = trueSolarTime.toLocaleTimeString("zh-CN");
+            document.getElementById('meanSolarTime').textContent = meanSolarTime.toLocaleTimeString("zh-CN");
+            document.getElementById('beijingTime').textContent = beijingTime.split(" ")[1];
+        }
+
+        // 页面加载时立即执行一次，并每秒更新
+        window.onload = function() {
+            updateTime(); // 初次加载时更新
+            setInterval(updateTime, 1000); // 每秒更新一次
+        };
+    </script>
+</body>
+</html>

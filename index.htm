@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真太阳时</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1DA1F2;
+            margin-bottom: 10px;
+        }
+        .time-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .true-solar {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1DA1F2;
+        }
+        .other-time {
+            font-size: 16px;
+            color: #666;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            margin-top: 10px;
+        }
+        footer {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>真太阳时</h1>
+    <div class="time-box">
+        <div class="true-solar" id="trueSolarTime">加载中...</div>
+        <div class="other-time">平太阳时: <span id="meanSolarTime">加载中...</span></div>
+        <div class="other-time">北京时间: <span id="beijingTime">加载中...</span></div>
+    </div>
+    <select id="citySelect" onchange="updateTime()">
+        <option value="116.4">北京 (经度 116.4°E)</option>
+        <option value="121.5">上海 (经度 121.5°E)</option>
+        <option value="113.3">广州 (经度 113.3°E)</option>
+        <option value="106.5">重庆 (经度 106.5°E)</option>
+        <option value="114.1">武汉 (经度 114.1°E)</option>
+        <option value="120.2">天津 (经度 120.2°E)</option>
+        <option value="108.9">西安 (经度 108.9°E)</option>
+        <option value="104.1">成都 (经度 104.1°E)</option>
+        <option value="123.4">沈阳 (经度 123.4°E)</option>
+        <option value="126.6">哈尔滨 (经度 126.6°E)</option>
+    </select>
+    <footer>数据基于当地经度计算 | 2025 xAI</footer>
+
+    <script>
+        function updateTime() {
+            const longitude = parseFloat(document.getElementById('citySelect').value);
+            const now = new Date();
+            const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+
+            // 计算平太阳时（忽略地球自转细微不均）
+            const timeDiff = (longitude - 120) * 4; // 每度4分钟
+            const meanSolarTime = new Date(now.getTime() + timeDiff * 60 * 1000);
+
+            // 简化的真太阳时计算（忽略详细的太阳时差方程）
+            const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+            const eot = 9.87 * Math.sin(2 * Math.PI * dayOfYear / 365) - 7.53 * Math.cos(Math.PI * dayOfYear / 365) - 1.5 * Math.sin(Math.PI * dayOfYear / 365);
+            const trueSolarTime = new Date(meanSolarTime.getTime() + eot * 60 * 1000);
+
+            // 更新显示
+            document.getElementById('trueSolarTime').textContent = trueSolarTime.toLocaleTimeString("zh-CN");
+            document.getElementById('meanSolarTime').textContent = meanSolarTime.toLocaleTimeString("zh-CN");
+            document.getElementById('beijingTime').textContent = beijingTime.split(" ")[1];
+        }
+
+        // 每秒更新一次
+        setInterval(updateTime, 1000);
+        updateTime(); // 初次加载
+    </script>
+</body>
+</html>
